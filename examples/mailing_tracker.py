@@ -1,9 +1,4 @@
-import os
-import sys
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-import datetime
+import datetime as dt
 import json
 import optparse
 import random
@@ -11,9 +6,9 @@ import uuid
 
 import yaml
 
-import recall.event_handler
-import recall.models
-import recall.locators
+import recall.event_handler as eh
+import recall.models as m
+import recall.locators as l
 
 accounts = []
 accounts_with_campaigns = []
@@ -22,153 +17,179 @@ addresses = []
 counts = {}
 
 
-class CreateAccount(recall.models.Command):
-    pass
+class CreateAccount(m.Command):
+    def require(self, name):
+        assert isinstance(name, basestring)
 
 
-class ChangeAccountName(recall.models.Command):
-    pass
+class ChangeAccountName(m.Command):
+    def require(self, name):
+        assert isinstance(name, basestring)
 
 
-class ChangeCampaignName(recall.models.Command):
-    pass
+class ChangeCampaignName(m.Command):
+    def require(self, name):
+        assert isinstance(name, basestring)
 
 
-class AddAccountMember(recall.models.Command):
-    pass
+class AddAccountMember(m.Command):
+    def require(self, address):
+        assert isinstance(address, basestring)
 
 
-class AddAccountCampaign(recall.models.Command):
-    pass
+class AddAccountCampaign(m.Command):
+    def require(self, name):
+        assert isinstance(name, basestring)
 
 
-class SendCampaignMailing(recall.models.Command):
-    pass
+class SendCampaignMailing(m.Command):
+    def require(self, name):
+        assert isinstance(name, basestring)
 
 
-class OpenMailing(recall.models.Command):
-    pass
+class OpenMailing(m.Command):
+    def require(self, datetime, address):
+        assert isinstance(datetime, dt.datetime)
+        assert isinstance(address, basestring)
 
 
-class ClickMailing(recall.models.Command):
-    pass
+class ClickMailing(m.Command):
+    def require(self, datetime, address):
+        assert isinstance(datetime, dt.datetime)
+        assert isinstance(address, basestring)
 
 
-class ShareMailing(recall.models.Command):
-    pass
+class ShareMailing(m.Command):
+    def require(self, datetime, address):
+        assert isinstance(datetime, dt.datetime)
+        assert isinstance(address, basestring)
 
 
-class AccountCreated(recall.models.Event):
-    def __init__(self, guid, name):
-        self._data = {"guid": guid, "name": name}
+class AccountCreated(m.Event):
+    def require(self, guid, name):
+        assert isinstance(guid, uuid.UUID)
+        assert isinstance(name, basestring)
 
 
-class AccountNameChanged(recall.models.Event):
-    def __init__(self, guid, name):
-        self._data = {"guid": guid, "name": name}
+class AccountNameChanged(m.Event):
+    def require(self, guid, name):
+        assert isinstance(guid, uuid.UUID)
+        assert isinstance(name, basestring)
 
 
-class CampaignNameChanged(recall.models.Event):
-    def __init__(self, guid, name):
-        self._data = {"guid": guid, "name": name}
+class CampaignNameChanged(m.Event):
+    def require(self, guid, name):
+        assert isinstance(guid, uuid.UUID)
+        assert isinstance(name, basestring)
 
 
-class AccountMemberAdded(recall.models.Event):
-    def __init__(self, guid, address):
-        self._data = {"guid": guid, "address": address}
+class AccountMemberAdded(m.Event):
+    def require(self, guid, address):
+        assert isinstance(guid, uuid.UUID)
+        assert isinstance(address, basestring)
 
 
-class AccountCampaignAdded(recall.models.Event):
-    def __init__(self, guid, campaign_guid, name):
-        self._data = {"guid": guid, "campaign_guid": campaign_guid, "name": name}
+class AccountCampaignAdded(m.Event):
+    def require(self, guid, campaign_guid, name):
+        assert isinstance(guid, uuid.UUID)
+        assert isinstance(campaign_guid, uuid.UUID)
+        assert isinstance(name, basestring)
 
 
-class CampaignMailingSent(recall.models.Event):
-    def __init__(self, guid, mailing_guid, name):
-        self._data = {"guid": guid, "mailing_guid": mailing_guid, "name": name}
+class CampaignMailingSent(m.Event):
+    def require(self, guid, mailing_guid, name):
+        assert isinstance(guid, uuid.UUID)
+        assert isinstance(mailing_guid, uuid.UUID)
+        assert isinstance(name, basestring)
 
 
-class MailingOpened(recall.models.Event):
-    def __init__(self, guid, datetime, address):
-        self._data = {"guid": guid, "datetime": datetime, "address": address}
+class MailingOpened(m.Event):
+    def require(self, guid, datetime, address):
+        assert isinstance(guid, uuid.UUID)
+        assert isinstance(datetime, dt.datetime)
+        assert isinstance(address, basestring)
 
 
-class MailingClicked(recall.models.Event):
-    def __init__(self, guid, datetime, address):
-        self._data = {"guid": guid, "datetime": datetime, "address": address}
+class MailingClicked(m.Event):
+    def require(self, guid, datetime, address):
+        assert isinstance(guid, uuid.UUID)
+        assert isinstance(datetime, dt.datetime)
+        assert isinstance(address, basestring)
 
 
-class MailingShared(recall.models.Event):
-    def __init__(self, guid, datetime, address):
-        self._data = {"guid": guid, "datetime": datetime, "address": address}
+class MailingShared(m.Event):
+    def require(self, guid, datetime, address):
+        assert isinstance(guid, uuid.UUID)
+        assert isinstance(datetime, dt.datetime)
+        assert isinstance(address, basestring)
 
 
-class WhenAccountCreated(recall.event_handler.DomainEventHandler):
+class WhenAccountCreated(eh.DomainEventHandler):
     def __call__(self, event):
         assert isinstance(event, AccountCreated)
         self.entity.guid = event['guid']
         self.entity.name = event['name']
 
 
-class WhenAccountNameChanged(recall.event_handler.DomainEventHandler):
+class WhenAccountNameChanged(eh.DomainEventHandler):
     def __call__(self, event):
         assert isinstance(event, AccountNameChanged)
         self.entity.name = event['name']
 
 
-class WhenCampaignNameChanged(recall.event_handler.DomainEventHandler):
+class WhenCampaignNameChanged(eh.DomainEventHandler):
     def __call__(self, event):
         assert isinstance(event, CampaignNameChanged)
         self.entity.name = event['name']
 
 
-class WhenAccountMemberAdded(recall.event_handler.DomainEventHandler):
+class WhenAccountMemberAdded(eh.DomainEventHandler):
     def __call__(self, event):
         assert isinstance(event, AccountMemberAdded)
         self.entity.members.append(event['address'])
 
 
-class WhenAccountCampaignAdded(recall.event_handler.DomainEventHandler):
+class WhenAccountCampaignAdded(eh.DomainEventHandler):
     def __call__(self, event):
         assert isinstance(event, AccountCampaignAdded)
         campaign = Campaign(event["campaign_guid"], event["name"])
         self.entity.campaigns.add(campaign)
 
 
-class WhenCampaignMailingSent(recall.event_handler.DomainEventHandler):
+class WhenCampaignMailingSent(eh.DomainEventHandler):
     def __call__(self, event):
         assert isinstance(event, CampaignMailingSent)
         mailing = Mailing(event["mailing_guid"], event["name"])
         self.entity.mailings.add(mailing)
 
 
-class WhenMailingOpened(recall.event_handler.DomainEventHandler):
+class WhenMailingOpened(eh.DomainEventHandler):
     def __call__(self, event):
         assert isinstance(event, MailingOpened)
         if event["address"] not in self.entity.engaged:
             self.entity.engaged.append(event["address"])
 
 
-class WhenMailingClicked(recall.event_handler.DomainEventHandler):
+class WhenMailingClicked(eh.DomainEventHandler):
     def __call__(self, event):
         assert isinstance(event, MailingClicked)
         if event["address"] not in self.entity.engaged:
             self.entity.engaged.append(event["address"])
 
 
-class WhenMailingShared(recall.event_handler.DomainEventHandler):
+class WhenMailingShared(eh.DomainEventHandler):
     def __call__(self, event):
         assert isinstance(event, MailingShared)
         if event["address"] not in self.entity.engaged:
             self.entity.engaged.append(event["address"])
 
 
-class Account(recall.models.AggregateRoot):
+class Account(m.AggregateRoot):
     def __init__(self):
         super(Account, self).__init__()
         self.name = None
         self.members = []
-        self.campaigns = recall.models.EntityList()
+        self.campaigns = m.EntityList()
         self._register_handlers()
 
     def is_created(self):
@@ -178,61 +199,85 @@ class Account(recall.models.AggregateRoot):
         assert isinstance(command, CreateAccount)
         name = command.get("name")
         if not self.is_created() and name:
-            self._apply_event(AccountCreated(self._create_guid(), name))
+            self._apply_event(AccountCreated(
+                guid=self._create_guid(),
+                name=name))
 
     def change_name(self, command):
         assert isinstance(command, ChangeAccountName)
         name = command.get("name")
         if self.is_created() and name:
-            self._apply_event(AccountNameChanged(self.guid, name))
+            self._apply_event(AccountNameChanged(guid=self.guid, name=name))
 
     def add_member(self, command):
         assert isinstance(command, AddAccountMember)
         address = command.get("address")
         if self.is_created() and address:
-            self._apply_event(AccountMemberAdded(self.guid, address))
+            self._apply_event(AccountMemberAdded(
+                guid=self.guid,
+                address=address))
 
     def add_campaign(self, command):
         assert isinstance(command, AddAccountCampaign)
         name = command.get("name")
         if self.is_created() and name:
             campaign = self._create_guid()
-            self._apply_event(AccountCampaignAdded(self.guid, campaign, name))
+            self._apply_event(AccountCampaignAdded(
+                guid=self.guid,
+                campaign_guid=campaign,
+                name=name))
 
     def _register_handlers(self):
-        self._register_event_handler(AccountCreated, WhenAccountCreated)
-        self._register_event_handler(AccountNameChanged, WhenAccountNameChanged)
-        self._register_event_handler(AccountMemberAdded, WhenAccountMemberAdded)
-        self._register_event_handler(AccountCampaignAdded, WhenAccountCampaignAdded)
+        self._register_event_handler(
+            AccountCreated,
+            WhenAccountCreated)
+        self._register_event_handler(
+            AccountNameChanged,
+            WhenAccountNameChanged)
+        self._register_event_handler(
+            AccountMemberAdded,
+            WhenAccountMemberAdded)
+        self._register_event_handler(
+            AccountCampaignAdded,
+            WhenAccountCampaignAdded)
 
 
-class Campaign(recall.models.Entity):
+class Campaign(m.Entity):
     def __init__(self, guid, name):
         super(Campaign, self).__init__()
         self.guid = guid
         self.name = name
-        self.mailings = recall.models.EntityList()
+        self.mailings = m.EntityList()
         self._register_handlers()
 
     def change_name(self, command):
         assert isinstance(command, ChangeCampaignName)
         name = command.get("name")
         if name:
-            self._apply_event(CampaignNameChanged(self.guid, name))
+            self._apply_event(CampaignNameChanged(
+                guid=self.guid,
+                name=name))
 
     def send_mailing(self, command):
         assert isinstance(command, SendCampaignMailing)
         name = command.get("name")
         if name:
             mailing = self._create_guid()
-            self._apply_event(CampaignMailingSent(self.guid, mailing, name))
+            self._apply_event(CampaignMailingSent(
+                guid=self.guid,
+                mailing_guid=mailing,
+                name=name))
 
     def _register_handlers(self):
-        self._register_event_handler(CampaignNameChanged, WhenCampaignNameChanged)
-        self._register_event_handler(CampaignMailingSent, WhenCampaignMailingSent)
+        self._register_event_handler(
+            CampaignNameChanged,
+            WhenCampaignNameChanged)
+        self._register_event_handler(
+            CampaignMailingSent,
+            WhenCampaignMailingSent)
 
 
-class Mailing(recall.models.Entity):
+class Mailing(m.Entity):
     def __init__(self, guid, name):
         super(Mailing, self).__init__()
         self.guid = guid
@@ -245,21 +290,30 @@ class Mailing(recall.models.Entity):
         address = command.get("address")
         datetime = command.get("datetime")
         if address and datetime:
-            self._apply_event(MailingOpened(self.guid, datetime, address))
+            self._apply_event(MailingOpened(
+                guid=self.guid,
+                datetime=datetime,
+                address=address))
 
     def click(self, command):
         assert isinstance(command, ClickMailing)
         address = command.get("address")
         datetime = command.get("datetime")
         if address and datetime:
-            self._apply_event(MailingClicked(self.guid, datetime, address))
+            self._apply_event(MailingClicked(
+                guid=self.guid,
+                datetime=datetime,
+                address=address))
 
     def share(self, command):
         assert isinstance(command, ShareMailing)
         address = command.get("address")
         datetime = command.get("datetime")
         if address and datetime:
-            self._apply_event(MailingShared(self.guid, datetime, address))
+            self._apply_event(MailingShared(
+                guid=self.guid,
+                datetime=datetime,
+                address=address))
 
     def _register_handlers(self):
         self._register_event_handler(MailingOpened, WhenMailingOpened)
@@ -280,7 +334,8 @@ def exec_change_account_name(repo):
     if accounts and counts.get('AccountUpdated', 0) < 10:
         counts['AccountUpdated'] = counts.get('AccountUpdated', 0) + 1
         account = repo.load(random.choice(accounts))
-        account.change_name(ChangeAccountName(name="Foo %s" % random.randint(10, 99)))
+        account.change_name(ChangeAccountName(
+            name="Foo %s" % random.randint(10, 99)))
         repo.save(account)
 
 
@@ -298,7 +353,8 @@ def exec_create_campaign(repo):
     if accounts and counts.get('CampaignCreated', 0) < 100:
         counts['CampaignCreated'] = counts.get('CampaignCreated', 0) + 1
         account = repo.load(random.choice(accounts))
-        account.add_campaign(AddAccountCampaign(name="Foo %s" % random.randint(100, 999)))
+        account.add_campaign(AddAccountCampaign(
+            name="Foo %s" % random.randint(100, 999)))
         repo.save(account)
         accounts_with_campaigns.append(account.guid)
 
@@ -308,7 +364,8 @@ def exec_change_campaign_name(repo):
         counts['CampaignUpdated'] = counts.get('CampaignUpdated', 0) + 1
         account = repo.load(random.choice(accounts_with_campaigns))
         campaign = random.choice(account.campaigns.values())
-        campaign.change_name(ChangeCampaignName(name="Foo %s" % random.randint(100, 999)))
+        campaign.change_name(ChangeCampaignName(
+            name="Foo %s" % random.randint(100, 999)))
         repo.save(account)
 
 
@@ -317,41 +374,53 @@ def exec_send_mailing(repo):
         counts['MailingCreated'] = counts.get('MailingCreated', 0) + 1
         account = repo.load(random.choice(accounts_with_campaigns))
         campaign = random.choice(account.campaigns.values())
-        campaign.send_mailing(SendCampaignMailing(name="Foo %s" % random.randint(1000, 9999)))
+        campaign.send_mailing(SendCampaignMailing(
+            name="Foo %s" % random.randint(1000, 9999)))
         repo.save(account)
-        accounts_with_campaigns_with_mailings.append((account.guid, campaign.guid))
+        accounts_with_campaigns_with_mailings.append((
+            account.guid,
+            campaign.guid))
 
 
 def exec_open_mailing(repo):
     if accounts_with_campaigns_with_mailings and addresses:
         counts['MailingOpened'] = counts.get('MailingOpened', 0) + 1
-        account_guid, campaign_guid = random.choice(accounts_with_campaigns_with_mailings)
+        account_guid, campaign_guid = random.choice(
+            accounts_with_campaigns_with_mailings)
         account = repo.load(account_guid)
         campaign = account.campaigns[campaign_guid]
         mailing = random.choice(campaign.mailings.values())
-        mailing.open(OpenMailing(datetime=random_time(), address=random.choice(addresses)))
+        mailing.open(OpenMailing(
+            datetime=random_time(),
+            address=random.choice(addresses)))
         repo.save(account)
 
 
 def exec_click_mailing(repo):
     if accounts_with_campaigns_with_mailings and addresses:
         counts['MailingClicked'] = counts.get('MailingClicked', 0) + 1
-        account_guid, campaign_guid = random.choice(accounts_with_campaigns_with_mailings)
+        account_guid, campaign_guid = random.choice(
+            accounts_with_campaigns_with_mailings)
         account = repo.load(account_guid)
         campaign = account.campaigns[campaign_guid]
         mailing = random.choice(campaign.mailings.values())
-        mailing.click(ClickMailing(datetime=random_time(), address=random.choice(addresses)))
+        mailing.click(ClickMailing(
+            datetime=random_time(),
+            address=random.choice(addresses)))
         repo.save(account)
 
 
 def exec_share_mailing(repo):
     if accounts_with_campaigns_with_mailings and addresses:
         counts['MailingShared'] = counts.get('MailingShared', 0) + 1
-        account_guid, campaign_guid = random.choice(accounts_with_campaigns_with_mailings)
+        account_guid, campaign_guid = random.choice(
+            accounts_with_campaigns_with_mailings)
         account = repo.load(account_guid)
         campaign = account.campaigns[campaign_guid]
         mailing = random.choice(campaign.mailings.values())
-        mailing.share(ShareMailing(datetime=random_time(), address=random.choice(addresses)))
+        mailing.share(ShareMailing(
+            datetime=random_time(),
+            address=random.choice(addresses)))
         repo.save(account)
 
 
@@ -360,12 +429,13 @@ def random_address():
 
 
 def random_time():
-    return (datetime.datetime.now()
-            - datetime.timedelta(seconds=random.randint(0, 157680000)))
+    return dt.datetime.now() - dt.timedelta(seconds=random.randint(0, 31536000))
 
 
 def random_exec(repo):
-    return globals()[random.choice([p for p in globals() if p[:5] == "exec_"])](repo)
+    return globals()[random.choice(
+        [p for p in globals() if p[:5] == "exec_"]
+    )](repo)
 
 
 def get_fqcn(cls):
@@ -396,29 +466,62 @@ def parse_cli_options():
 
 def main():
     name = "Tracker Demo"
-    settings = yaml.load(open("examples/config.yml", 'r'))
+    settings = yaml.load(open("examples/mailing_tracker.yml", 'r'))
     values, args = parse_cli_options()
     count = values.count
-    repo = recall.locators.RepositoryLocator(settings).locate(Account)
+    repo = l.RepositoryLocator(settings).locate(Account)
     repo.event_store._client.flushall()
 
-    print("%s started at %s\n" % (name, datetime.datetime.now().isoformat()))
+    print("%s started at %s\n" % (name, dt.datetime.now().isoformat()))
+
+    if count > 1000:
+        print("Generating %s random events...this could take a while." % count)
 
     for i in range(0, count):
+        if i and i % 1000 == 0:
+            print("Only %s left..." % (count - i))
         random_exec(repo)
 
-    stream = event_count(repo.event_store._client, repo.event_store._client.keys())
-    print("New Accounts: %s/%s (with %s/%s updates)" % (counts.get('AccountCreated', 0), stream.get(get_fqcn(AccountCreated)), counts.get('AccountUpdated', 0), stream.get(get_fqcn(AccountNameChanged))))
-    print("New Campaigns: %s/%s (with %s/%s updates)" % (counts.get('CampaignCreated', 0), stream.get(get_fqcn(AccountCampaignAdded)), counts.get('CampaignUpdated', 0), stream.get(get_fqcn(CampaignNameChanged))))
-    print("New Mailings: %s/%s" % (counts.get('MailingCreated', 0), stream.get(get_fqcn(CampaignMailingSent))))
-    print("New Addresses: %s/%s" % (counts.get('AddressCreated', 0), stream.get(get_fqcn(AccountMemberAdded))))
-    print("")
-    print("Opens: %s/%s" % (counts.get('MailingOpened', 0), stream.get(get_fqcn(MailingOpened))))
-    print("Clicks: %s/%s" % (counts.get('MailingClicked', 0), stream.get(get_fqcn(MailingClicked))))
-    print("Shares: %s/%s" % (counts.get('MailingShared', 0), stream.get(get_fqcn(MailingShared))))
-    print("")
-    print("Total: %s/%s" % (reduce(lambda x, y: x + y, counts.values(), 0), stream.get('total')))
+    print("\n%s stopped at %s\n\n" % (name, dt.datetime.now().isoformat()))
 
-    print("\n%s stopped at %s\n\n" % (name, datetime.datetime.now().isoformat()))
+    stream = event_count(
+        repo.event_store._client,
+        repo.event_store._client.keys())
+
+    creates = counts.get('AccountCreated', 0)
+    updates = counts.get('AccountUpdated', 0)
+    print("New Accounts: %s (with %s updates)" % (creates, updates))
+    assert creates == stream.get(get_fqcn(AccountCreated))
+    assert updates == stream.get(get_fqcn(AccountNameChanged))
+
+    creates = counts.get('CampaignCreated', 0)
+    updates = counts.get('CampaignUpdated', 0)
+    print("New Campaigns: %s (with %s updates)" % (creates, updates))
+    assert creates == stream.get(get_fqcn(AccountCampaignAdded))
+    assert updates == stream.get(get_fqcn(CampaignNameChanged))
+
+    creates = counts.get('MailingCreated', 0)
+    print("New Mailings: %s" % creates)
+    assert creates == stream.get(get_fqcn(CampaignMailingSent))
+
+    creates = counts.get('AddressCreated', 0)
+    print("New Addresses: %s" % creates)
+    assert creates == stream.get(get_fqcn(AccountMemberAdded))
+
+    creates = counts.get('MailingOpened', 0)
+    print("\nOpens: %s" % creates)
+    assert creates == stream.get(get_fqcn(MailingOpened))
+
+    creates = counts.get('MailingClicked', 0)
+    print("Clicks: %s" % creates)
+    assert creates == stream.get(get_fqcn(MailingClicked))
+
+    creates = counts.get('MailingShared', 0)
+    print("Shares: %s" % creates)
+    assert creates == stream.get(get_fqcn(MailingShared))
+
+    creates = reduce(lambda x, y: x + y, counts.values(), 0)
+    print("\nTotal: %s" % creates)
+    assert creates == stream.get('total')
 
 main()

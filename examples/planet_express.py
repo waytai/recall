@@ -1,76 +1,83 @@
-import os
-import sys
+import uuid
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-import recall.models
-import recall.locators
-import recall.event_handler
+import recall.models as m
+import recall.locators as l
+import recall.event_handler as eh
 
 
-class CompanyFounded(recall.models.Event):
-    def __init__(self, guid, name):
-        self._data = {"guid": guid, "name": name}
+class CompanyFounded(m.Event):
+    def require(self, guid, name):
+        assert isinstance(guid, uuid.UUID)
+        assert isinstance(name, str)
 
 
-class WhenCompanyFounded(recall.event_handler.DomainEventHandler):
+class WhenCompanyFounded(eh.DomainEventHandler):
     def __call__(self, event):
         assert isinstance(event, CompanyFounded)
         self.entity.guid = event['guid']
         self.entity.name = event['name']
 
 
-class EmployeeHired(recall.models.Event):
-    def __init__(self, guid, employee_guid, name, title):
-        self._data = {
-            "guid": guid,
-            "employee_guid": employee_guid,
-            "name": name,
-            "title": title}
+class EmployeeHired(m.Event):
+    def require(self, guid, employee_guid, name, title):
+        assert isinstance(guid, uuid.UUID)
+        assert isinstance(employee_guid, uuid.UUID)
+        assert isinstance(name, str)
+        assert isinstance(title, str)
 
 
-class WhenEmployeeHired(recall.event_handler.DomainEventHandler):
+class WhenEmployeeHired(eh.DomainEventHandler):
     def __call__(self, event):
         assert isinstance(event, EmployeeHired)
-        employee = Employee(event['employee_guid'], event['name'], event['title'])
+        employee = Employee(
+            event['employee_guid'],
+            event['name'],
+            event['title'])
         self.entity.employees.add(employee)
 
 
-class EmployeePromoted(recall.models.Event):
-    def __init__(self, guid, title):
-        self._data = {"guid": guid, "title": title}
+class EmployeePromoted(m.Event):
+    def require(self, guid, title):
+        assert isinstance(guid, uuid.UUID)
+        assert isinstance(title, str)
 
 
-class WhenEmployeePromoted(recall.event_handler.DomainEventHandler):
+class WhenEmployeePromoted(eh.DomainEventHandler):
     def __call__(self, event):
         assert isinstance(event, EmployeePromoted)
         self.entity.title = event['title']
 
 
-class FoundCompany(recall.models.Command):
-    pass
+class FoundCompany(m.Command):
+    def require(self, name):
+        assert isinstance(name, str)
 
 
-class HireEmployee(recall.models.Command):
-    pass
+class HireEmployee(m.Command):
+    def require(self, name, title):
+        assert isinstance(name, str)
+        assert isinstance(title, str)
 
 
-class PromoteEmployee(recall.models.Command):
-    pass
+class PromoteEmployee(m.Command):
+    def require(self, title):
+        assert isinstance(title, str)
 
 
-class Company(recall.models.AggregateRoot):
+class Company(m.AggregateRoot):
     def __init__(self):
         super(Company, self).__init__()
         self.name = None
-        self.employees = recall.models.EntityList()
+        self.employees = m.EntityList()
         self._register_handlers()
 
     def found(self, command):
         assert isinstance(command, FoundCompany)
         name = command.get("name")
         if name:
-            self._apply_event(CompanyFounded(self._create_guid(), name))
+            self._apply_event(CompanyFounded(
+                guid=self._create_guid(),
+                name=name))
 
     def hire_employee(self, command):
         assert isinstance(command, HireEmployee)
@@ -78,7 +85,11 @@ class Company(recall.models.AggregateRoot):
         title = command.get("title")
         if self.is_founded() and name and title:
             employee = self._create_guid()
-            self._apply_event(EmployeeHired(self.guid, employee, name, title))
+            self._apply_event(EmployeeHired(
+                guid=self.guid,
+                employee_guid=employee,
+                name=name,
+                title=title))
             return employee
 
     def is_founded(self):
@@ -89,7 +100,7 @@ class Company(recall.models.AggregateRoot):
         self._register_event_handler(EmployeeHired, WhenEmployeeHired)
 
 
-class Employee(recall.models.Entity):
+class Employee(m.Entity):
     def __init__(self, guid, name, title):
         super(Employee, self).__init__()
         self.guid = guid
@@ -101,7 +112,7 @@ class Employee(recall.models.Entity):
         assert isinstance(command, PromoteEmployee)
         title = command.get("title")
         if title:
-            self._apply_event(EmployeePromoted(self.guid, title))
+            self._apply_event(EmployeePromoted(guid=self.guid, title=title))
 
     def _register_handlers(self):
         self._register_event_handler(EmployeePromoted, WhenEmployeePromoted)
@@ -112,11 +123,13 @@ def main():
     company = Company()
     company.found(FoundCompany(name="Planet Express"))
     company.hire_employee(HireEmployee(name="Turanga Leela", title="Captain"))
-    fry = company.hire_employee(HireEmployee(name="Philip Fry", title="Delivery Boy"))
+    fry = company.hire_employee(HireEmployee(
+        name="Philip Fry",
+        title="Delivery Boy"))
     company.employees.get(fry).promote(PromoteEmployee(title="Narwhal Trainer"))
 
     # Save AR
-    repo = recall.locators.RepositoryLocator({}).locate(Company)
+    repo = l.RepositoryLocator().locate(Company)
     repo.save(company)
     guid = company.guid
     del company

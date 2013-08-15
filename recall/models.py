@@ -1,11 +1,12 @@
+import abc
+import collections
 import itertools
 import uuid
-import UserDict
 
-import recall.event_handler
+import event_handler
 
 
-class Command(UserDict.UserDict):
+class Command(collections.Mapping):
     """
     A command object. Not to be confused with the command pattern. This object
     is simply used to shuttle data between the client and the write model.
@@ -13,10 +14,27 @@ class Command(UserDict.UserDict):
     some action which may or may not result in a state change in the domain. In
     practice, it's a :class:`dict`, though it should be assumed to be immutable.
     """
-    pass
+    def __init__(self, *args, **kwargs):
+        assert not args
+        assert kwargs
+        self._data = kwargs
+        self.require(**kwargs)
+
+    def __getitem__(self, key):
+        return self._data[key]
+
+    def __iter__(self):
+        return iter(self._data)
+
+    def __len__(self):
+        return len(self._data)
+
+    @abc.abstractmethod
+    def require(self, **kwargs):
+        pass
 
 
-class Event(UserDict.DictMixin):
+class Event(collections.Mapping):
     """
     An event object. This object is simply used to shuttle data between the
     write model and the read model. Conceptually, it represents a state change
@@ -26,23 +44,25 @@ class Event(UserDict.DictMixin):
     IMPORTANT: An event can never be rejected (though it can be ignored). This
     represents a *change which has already happened* -- rejecting it would
     imply history can be re-written.
-
-    :param guid: The guid of the domain entity
-    :type guid: :class:`uuid.UUID`
     """
-    def __init__(self, guid):
-        assert isinstance(guid, uuid.UUID)
-        self._data = {"guid": guid}
+    def __init__(self, *args, **kwargs):
+        assert not args
+        assert kwargs
+        self._data = kwargs
+        self.require(**kwargs)
 
-    def __getitem__(self, guid_str):
-        """
-        :param guid_str: The GUID of the domain entity
-        :type guid_str: :class:`str`
+    def __getitem__(self, key):
+        return self._data[key]
 
-        :rtype: :class:`object`
-        """
-        assert isinstance(guid_str, str)
-        return self._data[guid_str]
+    def __iter__(self):
+        return iter(self._data)
+
+    def __len__(self):
+        return len(self._data)
+
+    @abc.abstractmethod
+    def require(self, **kwargs):
+        pass
 
     def keys(self):
         """
@@ -57,11 +77,30 @@ class Event(UserDict.DictMixin):
         return self._data.items()
 
 
-class EntityList(UserDict.UserDict):
+class EntityList(collections.MutableMapping):
     """
     A collection of domain entities, implemented as a :class:`dict` to allow
     random-access by key.
     """
+    def __init__(self, *args, **kwargs):
+        assert not args
+        self._data = kwargs
+
+    def __delitem__(self, key):
+        del(self._data[key])
+
+    def __getitem__(self, key):
+        return self._data[key]
+
+    def __iter__(self):
+        return iter(self._data)
+
+    def __len__(self):
+        return len(self._data)
+
+    def __setitem__(self, key, value):
+        self._data[key] = value
+
     def add(self, entity):
         """
         Add an entity to the collection
@@ -203,7 +242,10 @@ class Entity(object):
         :type callback_cls: :class:`type`
         """
         assert isinstance(event_cls, type(Event))
-        assert isinstance(callback_cls, type(recall.event_handler.DomainEventHandler))
+        assert isinstance(
+            callback_cls,
+            type(event_handler.DomainEventHandler))
+
         self._handlers[event_cls] = callback_cls
 
 

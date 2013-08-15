@@ -1,10 +1,12 @@
+import abc
 import datetime
 import uuid
 
-import recall.locators
-
 
 class EventMarshaler(object):
+    __metaclass__ = abc.ABCMeta
+
+    @abc.abstractmethod
     def marshal(self, event):
         """
         Marshal a domain event to a structure of built-in types
@@ -12,13 +14,10 @@ class EventMarshaler(object):
         :param event: The domain event
         :type event: :class:`recall.models.Event`
         """
-        raise NotImplementedError()
+        pass
 
 
 class DefaultEventMarshaler(EventMarshaler):
-    def __init__(self):
-        self._locator = recall.locators.Locator({})
-
     def _to_builtin(self, obj):
         """
         Convert an object to a type consisting of only built-in types
@@ -72,7 +71,7 @@ class DefaultEventMarshaler(EventMarshaler):
 
     def unmarshal(self, marshaled):
         """
-        Marshal a domain event to a structure of built-in types
+        Unmarshal a structure of built-in types to a domain event
 
         :param marshaled: A domain event marshaled to builtin types
         :type marshaled: :class:`object`

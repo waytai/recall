@@ -1,9 +1,10 @@
+import abc
 import pickle
 import uuid
 
 import memcache
 
-import recall.models
+import models
 
 
 class SnapshotStore(object):
@@ -17,6 +18,9 @@ class SnapshotStore(object):
     can be set per-aggregate root and the default frequency is a class property
     of the :class:`recall.repository.Repository`
     """
+    __metaclass__ = abc.ABCMeta
+
+    @abc.abstractmethod
     def load(self, guid):
         """
         Load an aggregate root from a snapshot
@@ -26,9 +30,9 @@ class SnapshotStore(object):
 
         :rtype: :class:`recall.models.AggregateRoot`
         """
-        assert isinstance(guid, uuid.UUID)
-        raise NotImplementedError
+        pass
 
+    @abc.abstractmethod
     def save(self, root):
         """
         Take a snapshot of an aggregate root
@@ -36,8 +40,7 @@ class SnapshotStore(object):
         :param root: The aggregate root
         :type root: :class:`recall.models.AggregateRoot`
         """
-        assert isinstance(root, recall.models.AggregateRoot)
-        raise NotImplementedError
+        pass
 
 
 class Memory(SnapshotStore):
@@ -68,7 +71,7 @@ class Memory(SnapshotStore):
         :param root: The aggregate root
         :type root: :class:`recall.models.AggregateRoot`
         """
-        assert isinstance(root, recall.models.AggregateRoot)
+        assert isinstance(root, models.AggregateRoot)
         self._snapshots[root.guid] = pickle.dumps(root)
 
 
@@ -98,5 +101,5 @@ class Memcached(SnapshotStore):
         :param root: The aggregate root
         :type root: :class:`recall.models.AggregateRoot`
         """
-        assert isinstance(root, recall.models.AggregateRoot)
+        assert isinstance(root, models.AggregateRoot)
         self._cache.set(str(root.guid), root)

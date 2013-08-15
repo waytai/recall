@@ -1,5 +1,7 @@
+coverage
 hiredis
 msgpack-python
+nose
 pika
 pyaml
 python-memcached

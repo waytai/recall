@@ -1,17 +1,21 @@
+import abc
 import copy
 import json
 import uuid
 
 import redis
 
-import recall.event_marshaler
-import recall.models
+import event_marshaler
+import models
 
 
 class EventStore(object):
     """
     The Event Store interface
     """
+    __metaclass__ = abc.ABCMeta
+
+    @abc.abstractmethod
     def get_all_events(self, guid):
         """
         Get all events for a domain entity
@@ -21,9 +25,9 @@ class EventStore(object):
 
         :rtype: :class:`iterator`
         """
-        assert isinstance(guid, uuid.UUID)
-        raise NotImplementedError
+        pass
 
+    @abc.abstractmethod
     def get_events_from_version(self, guid, version):
         """
         Get events for a domain entity as of a given version
@@ -36,10 +40,9 @@ class EventStore(object):
 
         :rtype: :class:`iterator`
         """
-        assert isinstance(guid, uuid.UUID)
-        assert isinstance(version, int)
-        raise NotImplementedError
+        pass
 
+    @abc.abstractmethod
     def save(self, entity):
         """
         Save a domain entity's events
@@ -47,8 +50,7 @@ class EventStore(object):
         :param entity: The domain entity
         :type entity: :class:`recall.models.Entity`
         """
-        assert isinstance(entity, recall.models.Entity)
-        raise NotImplementedError
+        pass
 
 
 class Memory(EventStore):
@@ -95,7 +97,7 @@ class Memory(EventStore):
         :param entity: The domain entity
         :type entity: :class:`recall.models.Entity`
         """
-        assert isinstance(entity, recall.models.Entity)
+        assert isinstance(entity, models.Entity)
         for provider in entity._get_all_entities():
             self._create_entity(provider)
             for event in provider._events:
@@ -108,7 +110,7 @@ class Memory(EventStore):
         :param entity: The domain entity
         :type entity: :class:`recall.models.Entity`
         """
-        assert isinstance(entity, recall.models.Entity)
+        assert isinstance(entity, models.Entity)
         if not self._events.get(entity.guid):
             self._events[entity.guid] = []
 
@@ -120,7 +122,7 @@ class Redis(EventStore):
 
     def __init__(self, **kwargs):
         self._client = redis.StrictRedis(**kwargs)
-        self._marshaler = recall.event_marshaler.DefaultEventMarshaler()
+        self._marshaler = event_marshaler.DefaultEventMarshaler()
 
     def get_all_events(self, guid):
         """
@@ -161,7 +163,7 @@ class Redis(EventStore):
         :param entity: The domain entity
         :type entity: :class:`recall.models.Entity`
         """
-        assert isinstance(entity, recall.models.Entity)
+        assert isinstance(entity, models.Entity)
 
         def fix_up(event):
             return json.dumps(self._marshaler.marshal(event))

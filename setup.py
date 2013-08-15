@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-version = '1.0.0-pre-2'
+version = '1.0.3'
 setup(
     name='recall',
     version=version,
