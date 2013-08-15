@@ -1,3 +1,5 @@
+[![Downloads](https://pypip.in/v/recall/badge.png)](https://crate.io/package/recall)
+
 # Recall
 Recall provides a library of classes useful for implementing the "write" side of a CQRS system (with event sourcing). It currently has service locators for most things to provide some degree of inversion of control, a memento-like repository for dealing with Aggregate Roots in a [DDD](http://en.wikipedia.org/wiki/Domain-driven_design)-way, and several interfaces for adding your own Event routers and Event & Snapshot stores.
 
