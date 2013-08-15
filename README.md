@@ -21,12 +21,5 @@ Recall provides abstract implementations of Aggregate Roots, Domain Entities, Ev
 ## API Docs
 [Read the Docs](https://recall.readthedocs.org/en/latest/)
 
-## Todo
- - [x] Add AMQP Event Router
- - [ ] Add Event replay
- - [x] Add Redis Event Store
- - [x] Add Memcached Snapshot Store
- - [ ] Tests!
-
 ## Tracks
 This PHP library is the basis for Recall, but don't let PHP stop you. [Tracks](https://github.com/spiralout/Tracks) is a well thought-out framework used in production every day. Not to mention that spiralout is the guy that introduced me to CQRS.
