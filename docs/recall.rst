@@ -25,14 +25,6 @@ recall Package
     :undoc-members:
     :show-inheritance:
 
-:mod:`locators` Module
-----------------------
-
-.. automodule:: recall.locators
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 :mod:`models` Module
 --------------------
 
