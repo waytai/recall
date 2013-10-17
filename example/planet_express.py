@@ -1,7 +1,7 @@
 import uuid
+from example import locators as l
 
 import recall.models as m
-import recall.locators as l
 import recall.event_handler as eh
 
 

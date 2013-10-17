@@ -1,5 +1,0 @@
-hiredis
-msgpack-python
-pika
-python-memcached
-redis

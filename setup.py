@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-version = '1.0.5'
+version = '1.1.0'
 setup(
     name='recall',
     version=version,
@@ -10,19 +10,15 @@ setup(
     maintainer='Doug Hurst',
     license='MIT',
     url='https://github.com/dalanhurst/recall',
-    packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
+    packages=find_packages(exclude=['example', 'tests']),
     download_url='http://pypi.python.org/packages/source/r/recall/recall-%s.tar.gz' % version,
     include_package_data=True,
-    package_data={'': ['requirements.txt']},
-    install_requires=[
-        item for item in
-        open("requirements.txt").read().split("\n")
-        if item],
     classifiers=[
-        'Development Status :: 3 - Alpha',
-        'Environment :: Console',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python']
+        "Development Status :: 4 - Beta",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Natural Language :: English",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python",
+        "Topic :: Software Development :: Libraries"]
 )

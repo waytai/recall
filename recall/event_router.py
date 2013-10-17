@@ -1,11 +1,6 @@
 import abc
-import types
 
-import pika
-import msgpack
-
-import event_marshaler
-import models
+import recall.models
 
 
 class EventRouter(object):
@@ -39,94 +34,5 @@ class StdOut(EventRouter):
         :param event: The domain event
         :type event: :class:`recall.models.Event`
         """
-        assert isinstance(event, models.Event)
+        assert isinstance(event, recall.models.Event)
         print("[x] Routed event %s" % event.__class__.__name__)
-
-
-class Callback(EventRouter):
-    """
-    Handle an event with registered callbacks
-    """
-    def __init__(self):
-        self._handlers = {}
-
-    def route(self, event):
-        """
-        Handle the event with registered callbacks
-
-        :param event: The domain event
-        :type event: :class:`recall.models.Event`
-        """
-        assert isinstance(event, models.Event)
-        callback = self._handlers.get(event.__class__)
-        if callback:
-            callback(event)
-
-    def register_event_handler(self, event_cls, callback):
-        """
-        Register a callback
-
-        :param event_cls: The class object of the domain event
-        :type event_cls: :class:`type`
-
-        :param callback: The callback
-        :type callback: :class:`types.FunctionType`
-        """
-        assert isinstance(event_cls, type(models.Event))
-        assert isinstance(callback, types.FunctionType)
-        if not self._handlers.get(event_cls):
-            self._handlers[event_cls] = []
-
-        self._handlers[event_cls] += [callback]
-
-
-class AMQP(EventRouter):
-    """
-    Publish an event via AMQP
-
-    :param connection: The connection settings
-    :type connection: :class:`dict`
-
-    :param channel: The channel settings
-    :type channel: :class:`dict`
-
-    :param exchange: The exchange settings
-    :type exchange: :class:`dict`
-    """
-
-    DEFAULT_EVENT_MARSHALER = event_marshaler.DefaultEventMarshaler
-
-    def __init__(self, connection=None, channel=None, exchange=None):
-        assert isinstance(connection, dict) or connection is None
-        assert isinstance(channel, dict) or channel is None
-        assert isinstance(exchange, dict) or exchange is None
-        connection = connection or {}
-        channel = channel or {}
-        self.exchange = exchange or {}
-
-        if "username" in connection and "password" in connection:
-            connection["credentials"] = pika.PlainCredentials(
-                username=connection["username"],
-                password=connection["password"]
-            )
-            del(connection["username"])
-            del(connection["password"])
-
-        params = pika.ConnectionParameters(**connection)
-        self.connection = pika.BlockingConnection(params)
-        self.channel = self.connection.channel(**channel)
-        self.channel.exchange_declare(**self.exchange)
-        self.marshaler = self.DEFAULT_EVENT_MARSHALER()
-
-    def route(self, event):
-        """
-        Publish the event
-
-        :param event: The domain event
-        :type event: :class:`recall.models.Event`
-        """
-        assert isinstance(event, models.Event)
-        self.channel.basic_publish(
-            exchange=self.exchange.get("exchange", ""),
-            routing_key=event.__class__.__name__,
-            body=msgpack.packb(self.marshaler.marshal(event)))
