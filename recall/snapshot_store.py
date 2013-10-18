@@ -2,8 +2,6 @@ import abc
 import pickle
 import uuid
 
-import memcache
-
 import models
 
 
