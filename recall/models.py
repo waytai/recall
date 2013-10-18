@@ -8,11 +8,12 @@ import event_handler
 
 class Command(collections.Mapping):
     """
-    A command object. Not to be confused with the command pattern. This object
-    is simply used to shuttle data between the client and the write model.
-    Conceptually, it represents the client instructing the domain to perform
-    some action which may or may not result in a state change in the domain. In
-    practice, it's a :class:`dict`, though it should be assumed to be immutable.
+    A command object -- not to be confused with the command pattern. This object
+    is simply used to shuttle data between the client and the domain (write)
+    model. Conceptually, it represents the client instructing the domain to
+    perform some action which may or may not result in a state change in the
+    domain. In practice, it's a :class:`dict`, though it should be assumed to be
+    immutable.
     """
     def __init__(self, *args, **kwargs):
         assert not args
@@ -37,12 +38,13 @@ class Command(collections.Mapping):
 class Event(collections.Mapping):
     """
     An event object. This object is simply used to shuttle data between the
-    write model and the read model. Conceptually, it represents a state change
-    in the domain. In practice, it's a :class:`dict`, though it should be
-    assumed to be immutable.
+    write model and the read model. Conceptually, it is a token which represents
+    that some action has happened in the domain (write) model which may or may
+    not have resulted in a state change. In practice, it's a :class:`dict`,
+    though it should be assumed to be immutable.
 
-    IMPORTANT: An event can never be rejected (though it can be ignored). This
-    represents a *change which has already happened* -- rejecting it would
+    **Important**: An event can *never* be rejected (though it can be ignored).
+    It represents a *change which has already happened* -- rejecting it would
     imply history can be re-written.
     """
     def __init__(self, *args, **kwargs):
@@ -80,7 +82,7 @@ class Event(collections.Mapping):
 class EntityList(collections.MutableMapping):
     """
     A collection of domain entities, implemented as a :class:`dict` to allow
-    random-access by key.
+    efficient, random access by key.
     """
     def __init__(self, *args, **kwargs):
         assert not args
@@ -254,7 +256,5 @@ class AggregateRoot(Entity):
     An aggregate root. This represents a single entity which may or may not
     contain an object graph which represents a logical and cohesive group of
     domain models.
-
-    http://www.udidahan.com/2009/06/29/dont-create-aggregate-roots/
     """
     pass

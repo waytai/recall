@@ -1,52 +1,23 @@
 [![Downloads](https://pypip.in/v/recall/badge.png)](https://crate.io/packages/recall)
 
-# Recall
-Recall provides a library of classes useful for implementing the "write" side of
-a CQRS system (with event sourcing). It currently has a memento-like repository
-for dealing with Aggregate Roots in a [DDD](http://en.wikipedia.org/wiki/Domain-driven_design)-way,
-and several interfaces for adding your own Event routers and Event & Snapshot
-stores.
+# Installation
 
-## CQRS
-Command/Query Responsibility Segregation is a fancy-sounding term for what turns
-out to be this elegant, structured, and scalable way to design a service (within
-a Bounded Context). It goes beyond [Bertrand Meyer's admonition to separate Commands and Queries](http://en.wikipedia.org/wiki/Command%E2%80%93query_separation)
-within objects and makes them separate models: a Command-only, "write", model
-and a Query-only, "read", model. Turns out, this simple extension of Meyer has
-some dramatic implications for the ability to scale a system while providing
-Availability and Partition Tolerance (with Eventual Consistency --
-[see CAP Theorem](http://en.wikipedia.org/wiki/CAP_theorem)).
+```bash
+pip install recall
+```
 
-A "write" model with pure Commands (only changes state) can be implemented in
-such a way that you never have to wait for the command to complete. This model
-can also have it's own data store, optimized for writing. Likewise a "read"
-model with pure Queries (only returns state) can have it's own read-optimized
-data store, say, de-normalized into "view" tables where every read simply
-returns a single record.
+# Usage
 
-## Event-Sourcing
-Building on top of CQRS, the storage of your write model could actually just be
-a sequence of all the events that happened to your domain model. Aside from
-making it easy to publish these events for different kinds of analysis, this
-sequence would, in effect, become a _perfect_ audit log of your system.
+See ```example/planet_express.py```
 
-## CQRS with Recall
-Recall provides abstract implementations of Aggregate Roots, Domain Entities,
-Events, and Commands along with a Repository which handles saving and loading an
-AggregateRoot as well as writing to the Event stream, snapshot-ing the AR, and
-routing events. In short, the heavy-lifting of the "write" model. In the
-example directory is the simple **planet_express.py** example
-which uses in-memory storage and a router to stdout.
+# Docs
 
-## CQRS Links:
- - [Greg Young: Unshackle Your Domain](http://www.infoq.com/presentations/greg-young-unshackle-qcon08)
- - [Udi Dahan: CQRS](http://www.infoq.com/presentations/Command-Query-Responsibility-Segregation)
+ - [Overview](https://recall.readthedocs.org/en/latest/overview/)
+ - [API](https://recall.readthedocs.org/en/latest/recall/)
 
-## API Docs
-[Read the Docs](https://recall.readthedocs.org/en/latest/)
+# Tracks
 
-## Tracks
 This PHP library is the basis for Recall, but don't let PHP stop you.
-[Tracks](https://github.com/spiralout/Tracks) is a well thought-out framework
-used in production every day. Not to mention that spiralout is the guy that
-introduced me to CQRS.
+[spiralout/Tracks](https://github.com/spiralout/Tracks) is a well thought-out
+framework used in production every day. Not to mention that @spiralout is the
+guy that introduced me to CQRS.

@@ -1,48 +1,48 @@
-recall Package
-==============
+Recall API
+==========
 
-:mod:`event_handler` Module
----------------------------
+:mod:`event_handler`
+--------------------
 
 .. automodule:: recall.event_handler
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`event_router` Module
---------------------------
+:mod:`event_router`
+-------------------
 
 .. automodule:: recall.event_router
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`event_store` Module
--------------------------
+:mod:`event_store`
+------------------
 
 .. automodule:: recall.event_store
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`models` Module
---------------------
+:mod:`models`
+-------------
 
 .. automodule:: recall.models
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`repository` Module
-------------------------
+:mod:`repository`
+-----------------
 
 .. automodule:: recall.repository
     :members:
     :undoc-members:
     :show-inheritance:
 
-:mod:`snapshot_store` Module
-----------------------------
+:mod:`snapshot_store`
+---------------------
 
 .. automodule:: recall.snapshot_store
     :members:
