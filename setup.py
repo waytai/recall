@@ -1,10 +1,16 @@
 from setuptools import setup, find_packages
 
-version = open("VERSION").read()
+with open("VERSION") as fp:
+    version = fp.read()
+
+with open("README.txt") as fp:
+    long_description = fp.read()
+
 setup(
     name='recall',
     version=version,
     description='CQRS Library for Python',
+    long_description=long_description,
     author='Doug Hurst',
     author_email='dalan.hurst@gmail.com',
     maintainer='Doug Hurst',
